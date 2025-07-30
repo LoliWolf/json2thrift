@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON转Thrift IDL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div class="panel-header">
+                <h3>JSON输入</h3>
+                <div class="button-group">
+                    <button id="formatBtn" class="btn btn-secondary">格式化JSON</button>
+                    <button id="generateBtn" class="btn btn-primary">生成Thrift</button>
+                </div>
+            </div>
+            <textarea id="jsonInput" placeholder="请输入JSON数据..." spellcheck="false"></textarea>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="right-panel">
+            <div class="panel-header">
+                <h3>Thrift IDL预览</h3>
+                <button id="copyBtn" class="btn btn-success">复制代码</button>
+            </div>
+            <textarea id="thriftOutput" placeholder="生成的Thrift IDL将显示在这里..." spellcheck="false"></textarea>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

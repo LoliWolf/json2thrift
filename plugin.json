@@ -1,0 +1,26 @@
+{
+  "name": "json2thrift",
+  "pluginName": "JSON转Thrift",
+  "description": "将JSON数据转换为Thrift IDL结构体定义",
+  "author": "Developer",
+  "homepage": "",
+  "version": "1.0.0",
+  "logo": "logo.png",
+  "platform": ["win32", "darwin", "linux"],
+  "development": {
+    "main": "index.html",
+    "buildCommand": ""
+  },
+  "preload": "preload.js",
+  "features": [
+    {
+      "code": "json2thrift",
+      "explain": "JSON转Thrift IDL",
+      "cmds": [
+        "json2thrift",
+        "JSON转Thrift",
+        "thrift"
+      ]
+    }
+  ]
+}
