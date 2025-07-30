@@ -65,23 +65,3 @@ struct GeneratedStruct {
   6: optional Profile profile;
 }
 ```
-
-## 开发说明
-
-### 项目结构
-```
-Json2Thrift/
-├── plugin.json      # 插件配置文件
-├── index.html        # 主界面
-├── style.css         # 样式文件
-├── script.js         # 核心逻辑
-├── preload.js        # 预加载脚本
-├── logo.svg          # 插件图标
-└── README.md         # 说明文档
-```
-
-## 注意事项
-
-- 生成的Thrift代码保持JSON原始字段命名
-- 所有字段默认为optional类型
-- 支持嵌套对象和数组的递归转换
