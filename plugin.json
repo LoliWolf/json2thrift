@@ -2,7 +2,7 @@
   "name": "json2thrift",
   "pluginName": "JSON转Thrift",
   "description": "将JSON数据转换为Thrift IDL结构体定义",
-  "author": "Developer",
+  "author": "Loli_Wolf",
   "homepage": "",
   "version": "1.0.0",
   "logo": "logo.png",
