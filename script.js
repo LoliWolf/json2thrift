@@ -145,20 +145,26 @@ class Json2Thrift {
     }
 
     async copyToClipboard() {
-        try {
-            const text = this.thriftOutput.value;
-            if (!text.trim()) {
-                this.showToast('没有可复制的内容', 'error');
-                return;
-            }
+        const text = this.thriftOutput.value;
+        if (!text.trim()) {
+            this.showToast('没有可复制的内容', 'error');
+            return;
+        }
 
-            await navigator.clipboard.writeText(text);
+        // 使用 uTools API 复制，提供更好的跨平台兼容性
+        if (window.utoolsHelpers && window.utoolsHelpers.copyText(text)) {
             this.showToast('已复制到剪贴板');
-        } catch (error) {
-            // 降级方案
-            this.thriftOutput.select();
-            document.execCommand('copy');
-            this.showToast('已复制到剪贴板');
+        } else {
+            // 如果 uTools API 不可用，则回退到 Web API
+            try {
+                await navigator.clipboard.writeText(text);
+                this.showToast('已复制到剪贴板');
+            } catch (error) {
+                // 最终降级方案
+                this.thriftOutput.select();
+                document.execCommand('copy');
+                this.showToast('已复制到剪贴板 (备用模式)');
+            }
         }
     }
 

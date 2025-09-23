@@ -6,7 +6,6 @@
   "homepage": "",
   "version": "1.0.0",
   "logo": "logo.png",
-  "platform": ["win32", "darwin", "linux"],
   "development": {
     "main": "index.html",
     "buildCommand": ""
