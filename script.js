@@ -79,17 +79,15 @@ class Json2Thrift {
             // 如果根是数组，分析数组元素类型
             if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) {
                 processObject(obj[0], structName);
-                thriftCode = `// Generated Thrift IDL\n\n`;
-                thriftCode += Array.from(structDefinitions.values()).join('\n\n');
+                thriftCode = Array.from(structDefinitions.values()).join('\n\n');
                 thriftCode += `\n\n// Root type: list<${structName}>`;
             } else {
                 const elementType = obj.length > 0 ? this.getThriftType(obj[0]) : 'string';
-                thriftCode = `// Generated Thrift IDL\n\n// Root type: list<${elementType}>`;
+                thriftCode = `// Root type: list<${elementType}>`;
             }
         } else if (typeof obj === 'object' && obj !== null) {
             processObject(obj, structName);
-            thriftCode = `// Generated Thrift IDL\n\n`;
-            thriftCode += Array.from(structDefinitions.values()).join('\n\n');
+            thriftCode = Array.from(structDefinitions.values()).join('\n\n');
         } else {
             thriftCode = `// Generated Thrift IDL\n\n// Root type: ${this.getThriftType(obj)}`;
         }
@@ -141,7 +139,10 @@ class Json2Thrift {
 
     capitalizeFirst(str) {
         if (!str) return 'Default';
-        return str.charAt(0).toUpperCase() + str.slice(1);
+        return str.split('_').map(part => {
+            if (!part) return '';
+            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        }).join('');
     }
 
     async copyToClipboard() {
