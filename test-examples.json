@@ -74,6 +74,33 @@
           "isPaid": true
         }
       }
+    },
+    {
+      "name": "字段合并测试 - 数组元素字段不一致",
+      "json": {
+        "users": [
+          {
+            "id": 1,
+            "name": "张三",
+            "email": "zhangsan@example.com",
+            "age": 25
+          },
+          {
+            "id": 2,
+            "name": "李四",
+            "phone": "13800138000",
+            "department": "技术部"
+          },
+          {
+            "id": 3,
+            "name": "王五",
+            "email": "wangwu@example.com",
+            "phone": "13900139000",
+            "age": 30,
+            "isManager": true
+          }
+        ]
+      }
     }
   ]
 }

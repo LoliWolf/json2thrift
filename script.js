@@ -60,6 +60,8 @@ class Json2Thrift {
         let structDefinitions = new Map();
         let fieldIndex = 1;
 
+
+
         // 递归处理对象，生成结构体定义
         const processObject = (obj, name) => {
             let fields = [];
@@ -80,7 +82,9 @@ class Json2Thrift {
         if (Array.isArray(obj)) {
             // 如果根是数组，分析数组元素类型
             if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) {
-                processObject(obj[0], structName);
+                // 合并数组中所有对象的字段
+                const mergedObject = this.mergeArrayObjects(obj);
+                processObject(mergedObject, structName);
                 thriftCode = Array.from(structDefinitions.values()).join('\n\n');
                 thriftCode += `\n\n// Root type: list<${structName}>`;
             } else {
@@ -114,8 +118,22 @@ class Json2Thrift {
                     if (value.length === 0) {
                         return 'list<string>';
                     }
-                    const elementType = this.getThriftType(value[0], fieldName, structDefinitions);
-                    return `list<${elementType}>`;
+                    
+                    // 检查数组元素是否为对象
+                    const hasObjectElements = value.some(item => 
+                        typeof item === 'object' && item !== null && !Array.isArray(item)
+                    );
+                    
+                    if (hasObjectElements) {
+                        // 合并数组中所有对象的字段
+                        const mergedObject = this.mergeArrayObjects(value);
+                        const elementType = this.getThriftType(mergedObject, fieldName, structDefinitions);
+                        return `list<${elementType}>`;
+                    } else {
+                        // 非对象数组，使用第一个元素的类型
+                        const elementType = this.getThriftType(value[0], fieldName, structDefinitions);
+                        return `list<${elementType}>`;
+                    }
                 } else {
                     // 嵌套对象，创建新的结构体
                     const structName = this.capitalizeFirst(fieldName);
@@ -137,6 +155,47 @@ class Json2Thrift {
             default:
                 return 'string';
         }
+    }
+
+    // 提取合并数组对象的逻辑为独立方法，供复用
+    mergeArrayObjects(array) {
+        const mergedObject = {};
+        
+        for (const item of array) {
+            if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+                for (const [key, value] of Object.entries(item)) {
+                    if (!mergedObject.hasOwnProperty(key)) {
+                        mergedObject[key] = value;
+                    } else {
+                        // 如果字段已存在，选择更具代表性的值
+                        // 优先选择非null、非undefined的值
+                        if (mergedObject[key] == null && value != null) {
+                            mergedObject[key] = value;
+                        } else if (mergedObject[key] != null && value != null) {
+                            // 如果两个值都不为null，选择类型更复杂的值
+                            const currentType = typeof mergedObject[key];
+                            const newType = typeof value;
+                            
+                            if (currentType === 'object' && newType !== 'object') {
+                                // 保持对象类型
+                            } else if (currentType !== 'object' && newType === 'object') {
+                                mergedObject[key] = value;
+                            } else if (Array.isArray(value) && !Array.isArray(mergedObject[key])) {
+                                mergedObject[key] = value;
+                            } else if (!Array.isArray(value) && Array.isArray(mergedObject[key])) {
+                                // 保持数组类型
+                            } else if (currentType === 'string' && newType === 'number') {
+                                // 保持字符串类型，因为它更通用
+                            } else if (currentType === 'number' && newType === 'string') {
+                                mergedObject[key] = value; // 选择字符串类型
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return mergedObject;
     }
 
     capitalizeFirst(str) {
