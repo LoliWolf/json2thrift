@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
     height: 100vh;
     overflow: hidden;
 }
@@ -50,33 +50,40 @@ body {
 
 .btn {
     padding: 8px 16px;
-    border: none;
+    border: 2px solid #333;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
     transition: all 0.3s ease;
     outline: none;
+    background: white;
+    color: #333;
 }
 
 .btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: #f8f9fa;
+    border-color: #000;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: white;
+    color: #333;
+    border-color: #8a8a8a;
 }
 
 .btn-secondary {
-    background: #6c757d;
-    color: white;
+    background: white;
+    color: #333;
+    border-color: #8a8a8a;
 }
 
 .btn-success {
-    background: #28a745;
-    color: white;
+    background: white;
+    color: #333;
+    border-color: #8a8a8a;
 }
 
 .btn:active {

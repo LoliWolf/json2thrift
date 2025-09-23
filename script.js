@@ -10,6 +10,7 @@ class Json2Thrift {
         this.formatBtn = document.getElementById('formatBtn');
         this.generateBtn = document.getElementById('generateBtn');
         this.copyBtn = document.getElementById('copyBtn');
+        this.clearBtn = document.getElementById('clearBtn');
         this.toast = document.getElementById('toast');
     }
 
@@ -17,6 +18,7 @@ class Json2Thrift {
         this.formatBtn.addEventListener('click', () => this.formatJson());
         this.generateBtn.addEventListener('click', () => this.generateThrift());
         this.copyBtn.addEventListener('click', () => this.copyToClipboard());
+        this.clearBtn.addEventListener('click', () => this.clearAll());
     }
 
     formatJson() {
@@ -167,6 +169,12 @@ class Json2Thrift {
                 this.showToast('已复制到剪贴板 (备用模式)');
             }
         }
+    }
+
+    clearAll() {
+        this.jsonInput.value = '';
+        this.thriftOutput.value = '';
+        this.showToast('已清空所有内容');
     }
 
     showToast(message, type = 'success') {
