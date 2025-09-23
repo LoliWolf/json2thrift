@@ -79,17 +79,15 @@ class Json2Thrift {
             // 如果根是数组，分析数组元素类型
             if (obj.length > 0 && typeof obj[0] === 'object' && obj[0] !== null) {
                 processObject(obj[0], structName);
-                thriftCode = `// Generated Thrift IDL\n\n`;
-                thriftCode += Array.from(structDefinitions.values()).join('\n\n');
+                thriftCode = Array.from(structDefinitions.values()).join('\n\n');
                 thriftCode += `\n\n// Root type: list<${structName}>`;
             } else {
                 const elementType = obj.length > 0 ? this.getThriftType(obj[0]) : 'string';
-                thriftCode = `// Generated Thrift IDL\n\n// Root type: list<${elementType}>`;
+                thriftCode = `// Root type: list<${elementType}>`;
             }
         } else if (typeof obj === 'object' && obj !== null) {
             processObject(obj, structName);
-            thriftCode = `// Generated Thrift IDL\n\n`;
-            thriftCode += Array.from(structDefinitions.values()).join('\n\n');
+            thriftCode = Array.from(structDefinitions.values()).join('\n\n');
         } else {
             thriftCode = `// Generated Thrift IDL\n\n// Root type: ${this.getThriftType(obj)}`;
         }
@@ -141,24 +139,33 @@ class Json2Thrift {
 
     capitalizeFirst(str) {
         if (!str) return 'Default';
-        return str.charAt(0).toUpperCase() + str.slice(1);
+        return str.split('_').map(part => {
+            if (!part) return '';
+            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        }).join('');
     }
 
     async copyToClipboard() {
-        try {
-            const text = this.thriftOutput.value;
-            if (!text.trim()) {
-                this.showToast('没有可复制的内容', 'error');
-                return;
-            }
+        const text = this.thriftOutput.value;
+        if (!text.trim()) {
+            this.showToast('没有可复制的内容', 'error');
+            return;
+        }
 
-            await navigator.clipboard.writeText(text);
+        // 使用 uTools API 复制，提供更好的跨平台兼容性
+        if (window.utoolsHelpers && window.utoolsHelpers.copyText(text)) {
             this.showToast('已复制到剪贴板');
-        } catch (error) {
-            // 降级方案
-            this.thriftOutput.select();
-            document.execCommand('copy');
-            this.showToast('已复制到剪贴板');
+        } else {
+            // 如果 uTools API 不可用，则回退到 Web API
+            try {
+                await navigator.clipboard.writeText(text);
+                this.showToast('已复制到剪贴板');
+            } catch (error) {
+                // 最终降级方案
+                this.thriftOutput.select();
+                document.execCommand('copy');
+                this.showToast('已复制到剪贴板 (备用模式)');
+            }
         }
     }
 
