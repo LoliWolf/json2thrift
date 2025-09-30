@@ -55,21 +55,13 @@ class Json2Thrift {
 
             const jsonObj = JSON.parse(jsonText);
             
-            // 检查当前模式
-            const treeMode = document.getElementById('treeModeBtn').classList.contains('active');
+            // 始终生成基础Thrift文本
+            const baseThrift = this.convertToThrift(jsonObj);
+            this.thriftOutput.value = baseThrift;
             
-            if (treeMode && treeEditor) {
-                // 使用树形编辑器，保留之前的状态
-                if (treeEditor.needsReload(jsonObj)) {
-                    treeEditor.lastJsonStructure = JSON.stringify(jsonObj);
-                    treeEditor.loadFromJson(jsonObj);
-                }
-                const thriftIdl = treeEditor.generateThriftIDL();
-                this.thriftOutput.value = thriftIdl;
-            } else {
-                // 使用传统文本模式
-                const thriftIdl = this.convertToThrift(jsonObj);
-                this.thriftOutput.value = thriftIdl;
+            // 更新树形编辑器
+            if (typeof window.treeEditorV2 !== 'undefined') {
+                window.treeEditorV2.loadFromJson(jsonObj);
             }
             
             this.showToast('Thrift IDL生成成功');
@@ -239,20 +231,22 @@ class Json2Thrift {
             this.treeModeBtn.classList.add('active');
             this.textModeBtn.classList.remove('active');
             
-            // 初始化树形编辑器
-            if (typeof treeEditor === 'undefined') {
-                window.treeEditor = new ThriftTreeEditor('treeEditor');
+            // 初始化新的树形编辑器
+            if (typeof window.treeEditorV2 === 'undefined') {
+                window.treeEditorV2 = new ThriftTreeEditorV2('treeEditor');
             }
             
-            // 如果有JSON数据，加载到树形编辑器
+            // 从当前文本加载到树形编辑器
             try {
                 const jsonText = this.jsonInput.value.trim();
                 if (jsonText) {
                     const jsonObj = JSON.parse(jsonText);
-                    window.treeEditor.loadFromJson(jsonObj);
+                    window.treeEditorV2.loadFromJson(jsonObj);
+                } else if (this.thriftOutput.value.trim()) {
+                    window.treeEditorV2.loadFromThrift(this.thriftOutput.value);
                 }
             } catch (error) {
-                console.log('等待有效JSON数据...');
+                console.log('等待有效数据...');
             }
         } else {
             treeEditorDiv.style.display = 'none';
@@ -260,35 +254,25 @@ class Json2Thrift {
             this.treeModeBtn.classList.remove('active');
             this.textModeBtn.classList.add('active');
             
-            // 同步树形编辑器的更改到文本输出
-            if (typeof window.treeEditor !== 'undefined') {
-                const thriftIDL = window.treeEditor.generateThriftIDL();
-                this.thriftOutput.value = thriftIDL;
-            }
+            // 树形编辑器的修改已实时同步到文本，无需额外操作
+            // 文本预览始终显示最新的Thrift IDL
         }
     }
 
-    // 覆盖clearAll方法以支持树形编辑器
+    // 覆盖clearAll方法以支持新的树形编辑器
     clearAll() {
         this.jsonInput.value = '';
         this.thriftOutput.value = '';
-        if (typeof window.treeEditor !== 'undefined') {
-            window.treeEditor.resetChanges();
+        if (typeof window.treeEditorV2 !== 'undefined') {
+            window.treeEditorV2.resetChanges();
             document.getElementById('treeEditor').innerHTML = '';
         }
         this.showToast('已清空所有内容');
     }
 
-    // 覆盖copyToClipboard方法以支持树形编辑器
+    // 覆盖copyToClipboard方法以支持新的树形编辑器
     async copyToClipboard() {
-        let text = '';
-        
-        const treeMode = this.treeModeBtn.classList.contains('active');
-        if (treeMode && typeof window.treeEditor !== 'undefined') {
-            text = window.treeEditor.generateThriftIDL();
-        } else {
-            text = this.thriftOutput.value;
-        }
+        let text = this.thriftOutput.value;
         
         if (!text.trim()) {
             this.showToast('没有可复制的内容', 'error');
@@ -305,17 +289,8 @@ class Json2Thrift {
                 this.showToast('已复制到剪贴板');
             } catch (error) {
                 // 最终降级方案
-                if (treeMode) {
-                    const tempTextarea = document.createElement('textarea');
-                    tempTextarea.value = text;
-                    document.body.appendChild(tempTextarea);
-                    tempTextarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempTextarea);
-                } else {
-                    this.thriftOutput.select();
-                    document.execCommand('copy');
-                }
+                this.thriftOutput.select();
+                document.execCommand('copy');
                 this.showToast('已复制到剪贴板 (备用模式)');
             }
         }
