@@ -208,6 +208,53 @@ body {
     }
 }
 
+/* uTools极简模式 */
+.utools-minimal .container {
+    padding: 4px;
+    gap: 4px;
+}
+
+.utools-minimal .panel-header {
+    padding: 6px;
+    min-height: 32px;
+    gap: 3px;
+}
+
+.utools-minimal .panel-header h3 {
+    font-size: 11px;
+}
+
+.utools-minimal .btn {
+    padding: 3px 6px;
+    font-size: 9px;
+}
+
+.utools-minimal textarea {
+    padding: 6px;
+    font-size: 10px;
+}
+
+/* 强制不溢出 */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+.container {
+    box-sizing: border-box;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.left-panel, .right-panel {
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
 textarea {
     flex: 1;
     border: none;

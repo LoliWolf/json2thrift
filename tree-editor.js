@@ -228,6 +228,12 @@ class ThriftTreeEditor {
         const hasChildren = field.children && field.children.length > 0;
         const isStructType = field.type === 'struct' || field.type.startsWith('list<struct');
 
+        // 生成命名风格预览
+        const namingOptions = Object.entries(this.namingStyles).map(([key, label]) => {
+            const previewName = this.applyNamingStyle(field.originalName, key);
+            return `<option value="${key}">${label} (${previewName})</option>`;
+        }).join('');
+
         div.innerHTML = `
             <div class="field-row">
                 <span class="field-index">${field.index}</span>
@@ -236,13 +242,13 @@ class ThriftTreeEditor {
                         `<option value="${mod}" ${mod === currentModifier ? 'selected' : ''}>${mod || 'none'}</option>`
                     ).join('')}
                 </select>
-                <select class="naming-select" data-path="${field.path}" data-type="naming">
-                    ${Object.entries(this.namingStyles).map(([key, label]) => 
-                        `<option value="${key}">${label}</option>`
-                    ).join('')}
-                </select>
-                <input type="text" class="field-name-input" data-path="${field.path}" 
-                       value="${currentName}" placeholder="${field.originalName}">
+                <div class="field-name-container">
+                    <input type="text" class="field-name-input" data-path="${field.path}" 
+                           value="${currentName}" placeholder="${field.originalName}">
+                    <select class="naming-select-inline" data-path="${field.path}" data-type="naming">
+                        ${namingOptions}
+                    </select>
+                </div>
                 <span class="field-type">${field.type}</span>
                 ${hasChildren || isStructType ? '<button class="toggle-btn" data-action="toggle">▶</button>' : ''}
             </div>
@@ -274,12 +280,14 @@ class ThriftTreeEditor {
         // 名称输入事件
         const nameInput = div.querySelector('.field-name-input');
         const modifierSelect = div.querySelector('.modifier-select');
-        const namingSelect = div.querySelector('.naming-select');
+        const namingSelect = div.querySelector('.naming-select-inline');
         const toggleBtn = div.querySelector('.toggle-btn');
 
         if (nameInput) {
             nameInput.addEventListener('input', (e) => {
                 this.setModifiedName(field.path, e.target.value);
+                // 更新下拉框中的预览
+                this.updateNamingPreview(field.path, field.originalName, e.target.value);
             });
         }
 
@@ -323,6 +331,26 @@ class ThriftTreeEditor {
             default:
                 return name;
         }
+    }
+
+    // 更新命名预览
+    updateNamingPreview(fieldPath, originalName, currentName) {
+        const select = document.querySelector(`select[data-path="${fieldPath}"][data-type="naming"]`);
+        if (!select) return;
+
+        // 保留当前选中的值
+        const currentValue = select.value;
+        
+        // 重新生成选项
+        select.innerHTML = '';
+        Object.entries(this.namingStyles).forEach(([key, label]) => {
+            const previewName = this.applyNamingStyle(originalName, key);
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = `${label} (${previewName})`;
+            option.selected = key === currentValue;
+            select.appendChild(option);
+        });
     }
 
     // 获取修改后的名称

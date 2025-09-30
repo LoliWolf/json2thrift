@@ -4,60 +4,166 @@
     display: flex;
     flex-direction: column;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 12px; /* 减小字体 */
+    font-size: 12px;
     background: #f8fafc;
     border-radius: 8px;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
-/* uTools尺寸优化 */
-@media (max-width: 800px) {
-    .thrift-tree-container {
-        font-size: 11px;
-    }
-    
-    .field-row {
-        padding: 6px 8px;
-        gap: 6px;
-    }
-    
-    .modifier-select, .naming-select {
-        min-width: 70px;
-        padding: 3px 6px;
-        font-size: 11px;
-    }
-    
-    .field-name-input {
-        min-width: 100px;
-        padding: 3px 6px;
-        font-size: 11px;
-    }
-    
-    .tree-toolbar .btn {
-        padding: 4px 8px;
-        font-size: 11px;
-    }
+/* 自适应尺寸类 */
+.size-small .thrift-tree-container {
+    font-size: 10px;
 }
 
-@media (max-width: 600px) {
+.size-medium .thrift-tree-container {
+    font-size: 11px;
+}
+
+.size-large .thrift-tree-container {
+    font-size: 12px;
+}
+
+/* 超小屏幕适配 */
+.size-small .field-row {
+    padding: 3px 4px;
+    gap: 3px;
+    flex-wrap: wrap;
+}
+
+.size-small .field-index {
+    width: 14px;
+    font-size: 8px;
+}
+
+.size-small .modifier-select {
+    min-width: 50px;
+    max-width: 60px;
+    padding: 2px 3px;
+    font-size: 9px;
+}
+
+.size-small .field-name-container {
+    min-width: 80px;
+    max-width: none;
+}
+
+.size-small .field-name-input {
+    padding: 2px 3px;
+    font-size: 9px;
+}
+
+.size-small .naming-select-inline {
+    padding: 1px 3px;
+    font-size: 8px;
+}
+
+.size-small .field-type {
+    font-size: 8px;
+    padding: 1px 3px;
+}
+
+.size-small .tree-toolbar .btn {
+    padding: 3px 6px;
+    font-size: 9px;
+}
+
+.size-medium .field-row {
+    padding: 5px 6px;
+    gap: 5px;
+}
+
+.size-medium .modifier-select,
+.size-medium .naming-select {
+    min-width: 65px;
+    padding: 3px 5px;
+    font-size: 10px;
+}
+
+.size-medium .field-name-input {
+    min-width: 100px;
+    padding: 3px 5px;
+    font-size: 10px;
+}
+
+.size-large .field-row {
+    padding: 8px 12px;
+    gap: 8px;
+}
+
+/* 响应式布局 */
+@media (max-width: 500px), (max-height: 400px) {
     .thrift-tree-container {
-        font-size: 10px;
-    }
-    
-    .field-row {
-        flex-wrap: wrap;
-        gap: 4px;
-    }
-    
-    .field-index {
-        width: 16px;
         font-size: 9px;
     }
     
-    .modifier-select, .naming-select {
-        min-width: 60px;
-        font-size: 10px;
+    .tree-node-header {
+        padding: 6px 8px;
     }
+    
+    .struct-name {
+        font-size: 11px;
+    }
+    
+    .struct-type {
+        font-size: 8px;
+    }
+}
+
+/* 确保内容不溢出 */
+.tree-content {
+    flex: 1;
+    overflow: auto;
+    overflow-x: hidden;
+    max-height: calc(100vh - 120px);
+    box-sizing: border-box;
+}
+
+.fields-container {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.field-row {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    min-height: 24px;
+}
+
+.field-name-input {
+    flex: 1;
+    min-width: 60px;
+    max-width: none;
+    box-sizing: border-box;
+}
+
+.modifier-select,
+.naming-select {
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+/* 强制换行防止溢出 */
+.field-name-input,
+.field-type {
+    word-break: break-all;
+    overflow-wrap: break-word;
+}
+
+/* 隐藏滚动条但保持功能 */
+.tree-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.tree-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.tree-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
 }
 
 .tree-toolbar {
@@ -158,37 +264,58 @@
     font-weight: bold;
 }
 
-.modifier-select, .naming-select {
-    padding: 4px 8px;
+.modifier-select {
+    padding: 4px 6px;
     border: 1px solid #d1d5db;
     border-radius: 4px;
     font-size: 12px;
     background: white;
     cursor: pointer;
     transition: all 0.2s;
-    min-width: 80px;
+    min-width: 70px;
+    flex-shrink: 0;
 }
 
-.modifier-select:hover, .naming-select:hover {
-    border-color: #9ca3af;
-}
-
-.modifier-select:focus, .naming-select:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+.field-name-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
 }
 
 .field-name-input {
-    flex: 1;
-    padding: 4px 8px;
+    padding: 4px 6px;
     border: 1px solid #d1d5db;
     border-radius: 4px;
     font-size: 13px;
     font-family: inherit;
     background: white;
     transition: all 0.2s;
-    min-width: 120px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.naming-select-inline {
+    padding: 2px 4px;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    font-size: 11px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modifier-select:hover, .naming-select-inline:hover {
+    border-color: #9ca3af;
+}
+
+.modifier-select:focus, .naming-select-inline:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .field-name-input:focus {
