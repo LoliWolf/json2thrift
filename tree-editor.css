@@ -173,6 +173,7 @@
     background: white;
     border-bottom: 1px solid #e2e8f0;
     flex-shrink: 0;
+    align-items: center;
 }
 
 .tree-toolbar .btn {
@@ -189,6 +190,8 @@
     background: #f3f4f6;
     border-color: #9ca3af;
 }
+
+
 
 .tree-content {
     flex: 1;

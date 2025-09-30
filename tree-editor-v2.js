@@ -7,13 +7,11 @@ class ThriftTreeEditorV2 {
         this.originalJson = null;
         this.modifications = new Map();
         this.namingStyles = {
-            'original': '保持原样',
-            'camelCase': 'camelCase',
-            'snake_case': 'snake_case',
-            'PascalCase': 'PascalCase',
-            'kebab-case': 'kebab-case'
-        };
-        this.modifiers = ['optional', 'required', ''];
+        'camelCase': 'camelCase',
+        'snake_case': 'snake_case',
+        'PascalCase': 'PascalCase'
+    };
+        this.modifiers = ['optional', 'required', 'none'];
         this.init();
     }
 
@@ -21,8 +19,7 @@ class ThriftTreeEditorV2 {
         this.container.className = 'thrift-tree-container';
         this.container.innerHTML = `
             <div class="tree-toolbar">
-                <button class="btn btn-sm" onclick="window.treeEditorV2 && window.treeEditorV2.syncToText()">同步到文本</button>
-                <button class="btn btn-sm" onclick="window.treeEditorV2 && window.treeEditorV2.resetChanges()">重置</button>
+                <button class="btn btn-sm" onclick="window.treeEditorV2 && window.treeEditorV2.resetChanges()" title="重置所有修改">重置</button>
             </div>
             <div class="tree-content" id="treeContent"></div>
         `;
@@ -126,12 +123,13 @@ class ThriftTreeEditorV2 {
                 inStruct = false;
                 currentStruct = null;
             } else if (inStruct && trimmed.includes(':')) {
-                const match = trimmed.match(/(\d+):\s*(\w+)?\s*(\w+)\s+(\w+);/);
+                // 更灵活的匹配模式，支持可选修饰词
+                const match = trimmed.match(/(\d+):\s*(?:(\w+)\s+)?(\w+)\s+(\w+);/);
                 if (match) {
                     const [, index, modifier, type, name] = match;
                     const originalName = name;
                     const currentName = this.getModifiedName(`${currentStruct.name}.${name}`) || name;
-                    const currentModifier = this.getModifiedModifier(`${currentStruct.name}.${name}`) || (modifier || 'optional');
+                    const currentModifier = this.getModifiedModifier(`${currentStruct.name}.${name}`) || (modifier || 'none');
 
                     currentStruct.fields.push({
                         index: parseInt(index),
@@ -197,9 +195,10 @@ class ThriftTreeEditorV2 {
         const currentModifier = this.getModifiedModifier(field.path) || field.modifier;
 
         // 生成命名风格预览
+        const currentStyle = this.detectCurrentStyle(field.originalName);
         const namingOptions = Object.entries(this.namingStyles).map(([key, label]) => {
             const previewName = this.applyNamingStyle(field.originalName, key);
-            return `<option value="${key}" ${key === 'original' && currentName === field.originalName ? 'selected' : ''}>${label} (${previewName})</option>`;
+            return `<option value="${key}" ${key === currentStyle ? 'selected' : ''}>${label} (${previewName})</option>`;
         }).join('');
 
         div.innerHTML = `
@@ -234,12 +233,14 @@ class ThriftTreeEditorV2 {
             nameInput.addEventListener('input', (e) => {
                 this.setModifiedName(field.path, e.target.value);
                 this.updateNamingPreview(field.path, field.originalName, e.target.value);
+                this.autoSave();
             });
         }
 
         if (modifierSelect) {
             modifierSelect.addEventListener('change', (e) => {
                 this.setModifiedModifier(field.path, e.target.value);
+                this.autoSave();
             });
         }
 
@@ -248,6 +249,7 @@ class ThriftTreeEditorV2 {
                 const newName = this.applyNamingStyle(field.originalName, e.target.value);
                 nameInput.value = newName;
                 this.setModifiedName(field.path, newName);
+                this.autoSave();
             });
         }
     }
@@ -266,10 +268,41 @@ class ThriftTreeEditorV2 {
         struct.fields.forEach(field => {
             const name = this.getModifiedName(field.path) || field.name;
             const modifier = this.getModifiedModifier(field.path) || field.modifier;
-            result += `  ${field.index}: ${modifier ? modifier + ' ' : ''}${field.type} ${name};\n`;
+            let modifierText = '';
+            
+            if (modifier && modifier !== '' && modifier !== 'none') {
+                modifierText = modifier + ' ';
+            }
+            
+            result += `  ${field.index}: ${modifierText}${field.type} ${name};\n`;
         });
         result += '}';
         return result;
+    }
+
+    // 自动保存到文本
+    autoSave() {
+        const updatedThrift = this.generateUpdatedThrift();
+        if (window.parentApp) {
+            window.parentApp.updateThriftOutput(updatedThrift);
+        }
+    }
+
+    // 简化状态管理方法
+    setModifiedName(path, name) {
+        this.modifications.set(`${path}_name`, name);
+        this.autoSave();
+    }
+
+    setModifiedModifier(path, modifier) {
+        this.modifications.set(`${path}_modifier`, modifier);
+        this.autoSave();
+    }
+
+    resetChanges() {
+        this.modifications.clear();
+        this.renderTree();
+        this.autoSave();
     }
 
     // 应用命名风格
@@ -279,6 +312,7 @@ class ThriftTreeEditorV2 {
         switch (style) {
             case 'camelCase':
                 return name.replace(/_([a-z])/g, (g) => g[1].toUpperCase())
+                          .replace(/_([A-Z])/g, (g) => g[1])
                           .replace(/^([A-Z]+)_/, (m) => m.toLowerCase());
             case 'snake_case':
                 return name.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
@@ -292,6 +326,34 @@ class ThriftTreeEditorV2 {
         }
     }
 
+    // 检测当前命名风格
+    detectCurrentStyle(name) {
+        if (!name) return 'camelCase';
+        
+        // 检测snake_case
+        if (name.includes('_')) {
+            return 'snake_case';
+        }
+        
+        // 检测PascalCase
+        if (name[0] === name[0].toUpperCase() && /[a-z]/.test(name.slice(1))) {
+            return 'PascalCase';
+        }
+        
+        // 检测camelCase (首字母小写，包含大写字母)
+        if (/[A-Z]/.test(name) && name[0] === name[0].toLowerCase()) {
+            return 'camelCase';
+        }
+        
+        // 全小写默认为camelCase
+        if (name === name.toLowerCase()) {
+            return 'camelCase';
+        }
+        
+        // 其他情况返回camelCase
+        return 'camelCase';
+    }
+
     generateUpdatedThrift() {
         let result = '';
         
@@ -302,17 +364,6 @@ class ThriftTreeEditorV2 {
         }
         
         return result.trim();
-    }
-
-    formatStructDefinition(struct) {
-        let result = `struct ${struct.name} {\n`;
-        struct.fields.forEach(field => {
-            const name = this.getModifiedName(field.path) || field.name;
-            const modifier = this.getModifiedModifier(field.path) || field.modifier;
-            result += `  ${field.index}: ${modifier ? modifier + ' ' : ''}${field.type} ${name};\n`;
-        });
-        result += '}';
-        return result;
     }
 
     // 工具方法
