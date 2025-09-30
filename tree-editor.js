@@ -12,10 +12,23 @@ class ThriftTreeEditor {
             'kebab-case': 'kebab-case'
         };
         this.modifiers = ['optional', 'required', ''];
+        
+        // 检查容器元素是否存在
+        if (!this.container) {
+            console.error(`TreeEditor: 找不到ID为 '${containerId}' 的容器元素`);
+            return;
+        }
+        
         this.init();
     }
 
     init() {
+        // 再次检查容器是否存在
+        if (!this.container) {
+            console.error('TreeEditor: 容器元素不存在，无法初始化');
+            return;
+        }
+        
         this.container.className = 'thrift-tree-container';
         this.container.innerHTML = `
             <div class="tree-toolbar">
@@ -177,7 +190,17 @@ class ThriftTreeEditor {
 
     // 渲染树形结构
     renderTree() {
+        if (!this.container) {
+            console.error('TreeEditor: 容器不存在，无法渲染树形结构');
+            return;
+        }
+        
         const content = document.getElementById('treeContent');
+        if (!content) {
+            console.error('TreeEditor: 找不到treeContent元素');
+            return;
+        }
+        
         content.innerHTML = '';
         
         if (this.treeData) {

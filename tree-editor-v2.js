@@ -12,10 +12,23 @@ class ThriftTreeEditorV2 {
         'PascalCase': 'PascalCase'
     };
         this.modifiers = ['optional', 'required', 'none'];
+        
+        // 检查容器元素是否存在
+        if (!this.container) {
+            console.error(`TreeEditor: 找不到ID为 '${containerId}' 的容器元素`);
+            return;
+        }
+        
         this.init();
     }
 
     init() {
+        // 再次检查容器是否存在
+        if (!this.container) {
+            console.error('TreeEditor: 容器元素不存在，无法初始化');
+            return;
+        }
+        
         this.container.className = 'thrift-tree-container';
         this.container.innerHTML = `
             <div class="tree-toolbar">
@@ -43,6 +56,8 @@ class ThriftTreeEditorV2 {
     // JSON转Thrift
     jsonToThrift(jsonData, structName = 'Root') {
         const structs = [];
+        // 初始化结构体跟踪
+        this.processedStructs = new Set();
         this.generateStructsFromJson(jsonData, structName, structs);
         return structs.map(s => this.formatStructDefinition(s)).join('\n\n');
     }
@@ -59,6 +74,11 @@ class ThriftTreeEditorV2 {
     }
 
     generateStructFromObject(obj, structName, structs) {
+        // 检查是否已经处理过这个结构体
+        if (this.processedStructs && this.processedStructs.has(structName)) {
+            return;
+        }
+
         const struct = {
             name: structName,
             fields: []
@@ -86,16 +106,28 @@ class ThriftTreeEditorV2 {
         }
 
         structs.push(struct);
+        
+        // 标记为已处理
+        if (this.processedStructs) {
+            this.processedStructs.add(structName);
+        }
 
         // 处理嵌套结构
         for (const [key, value] of Object.entries(obj)) {
             if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                const nestedName = this.capitalizeFirst(key);
+                const nestedName = this.generateUniqueStructName(key, value);
                 this.generateStructFromObject(value, nestedName, structs);
-            } else if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
-                const merged = this.mergeArrayObjects(value);
-                const nestedName = this.capitalizeFirst(key) + 'Item';
-                this.generateStructFromObject(merged, nestedName, structs);
+            } else if (Array.isArray(value) && value.length > 0) {
+                // 检查数组中是否有对象元素
+                const hasObjectElements = value.some(item => 
+                    typeof item === 'object' && item !== null && !Array.isArray(item)
+                );
+                
+                if (hasObjectElements) {
+                    const merged = this.mergeArrayObjects(value);
+                    const nestedName = `${this.capitalizeFirst(key)}Item`;
+                    this.generateStructFromObject(merged, nestedName, structs);
+                }
             }
         }
     }
@@ -151,7 +183,17 @@ class ThriftTreeEditorV2 {
 
     // 渲染树形结构
     renderTree() {
+        if (!this.container) {
+            console.error('TreeEditor: 容器不存在，无法渲染树形结构');
+            return;
+        }
+        
         const content = document.getElementById('treeContent');
+        if (!content) {
+            console.error('TreeEditor: 找不到treeContent元素');
+            return;
+        }
+        
         content.innerHTML = '';
         
         if (this.parsedData && this.parsedData.length > 0) {
@@ -399,12 +441,25 @@ class ThriftTreeEditorV2 {
             case 'object':
                 if (Array.isArray(value)) {
                     if (value.length === 0) return 'list<string>';
-                    const elementType = this.inferThriftType(value[0], fieldName, structs);
-                    return `list<${elementType}>`;
+                    
+                    // 检查数组元素是否为对象
+                    const hasObjectElements = value.some(item => 
+                        typeof item === 'object' && item !== null && !Array.isArray(item)
+                    );
+                    
+                    if (hasObjectElements) {
+                        // 为数组元素生成特殊的结构体名称
+                        const arrayElementName = fieldName ? `${this.capitalizeFirst(fieldName)}Item` : 'ArrayItem';
+                        return `list<${arrayElementName}>`;
+                    } else {
+                        // 非对象数组，使用第一个元素的类型
+                        const elementType = this.inferThriftType(value[0], fieldName, structs);
+                        return `list<${elementType}>`;
+                    }
                 } else {
-                    const structName = this.capitalizeFirst(fieldName);
-                    this.generateStructFromObject(value, structName, structs);
-                    return structName;
+                    // 只返回结构体名称，不在这里生成结构体
+                    // 结构体的生成由generateStructFromObject统一处理
+                    return this.generateUniqueStructName(fieldName, value);
                 }
             default:
                 return 'string';
@@ -412,8 +467,87 @@ class ThriftTreeEditorV2 {
     }
 
     capitalizeFirst(str) {
-        if (!str) return 'Default';
+        if (!str) return '';
         return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // 生成唯一且描述性的结构体名称
+    generateUniqueStructName(fieldName, obj) {
+        if (!fieldName) {
+            fieldName = 'Generated';
+        }
+        
+        // 基础名称
+        let baseName = this.capitalizeFirst(fieldName);
+        
+        // 检查是否已存在相同结构的结构体
+        if (this.processedStructs) {
+            for (const existingName of this.processedStructs) {
+                if (this.isSameStructure(existingName, obj)) {
+                    return existingName;
+                }
+            }
+        }
+        
+        // 如果没有冲突，直接返回基础名称
+        if (!this.processedStructs || !this.processedStructs.has(baseName)) {
+            return baseName;
+        }
+        
+        // 如果有冲突，尝试添加关键字段信息
+        const keyFields = this.getKeyFields(obj);
+        if (keyFields.length > 0) {
+            const descriptiveName = baseName + keyFields.map(f => this.capitalizeFirst(f)).join('');
+            if (!this.processedStructs.has(descriptiveName)) {
+                return descriptiveName;
+            }
+        }
+        
+        // 最后使用数字后缀
+        let counter = 1;
+        let uniqueName = `${baseName}${counter}`;
+        while (this.processedStructs && this.processedStructs.has(uniqueName)) {
+            counter++;
+            uniqueName = `${baseName}${counter}`;
+        }
+        
+        return uniqueName;
+    }
+
+    // 检查两个对象是否具有相同的结构
+    isSameStructure(structName, obj) {
+        // 这里简化实现，实际应用中可以更复杂
+        if (!this.processedStructs || !this.processedStructs.has(structName)) {
+            return false;
+        }
+        
+        // 简单的字段数量和名称比较
+        const objKeys = Object.keys(obj).sort();
+        // 这里需要从已处理的结构体中获取字段信息进行比较
+        // 为简化，暂时返回false，让每个结构体都有唯一名称
+        return false;
+    }
+
+    // 提取对象的关键字段用于命名
+    getKeyFields(obj) {
+        const keys = Object.keys(obj);
+        const keyFields = [];
+        
+        // 优先选择常见的标识字段
+        const identifierFields = ['id', 'name', 'type', 'code', 'key'];
+        for (const field of identifierFields) {
+            if (keys.includes(field)) {
+                keyFields.push(field);
+                break; // 只取第一个找到的标识字段
+            }
+        }
+        
+        // 如果没有标识字段，取前两个字段
+        if (keyFields.length === 0 && keys.length > 0) {
+            keyFields.push(...keys.slice(0, Math.min(2, keys.length)));
+        }
+        
+        return keyFields;
     }
 
     // 状态管理
