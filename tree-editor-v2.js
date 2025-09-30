@@ -55,6 +55,17 @@ class ThriftTreeEditorV2 {
         this.renderTree();
     }
 
+    // 清空编辑器
+    clear() {
+        this.thriftText = '';
+        this.parsedData = null;
+        this.originalJson = null;
+        this.modifications.clear();
+        this.initialParsedData = null;
+        this.initialThriftText = '';
+        this.renderTree();
+    }
+
     // JSON转Thrift
     jsonToThrift(jsonData, structName = 'Root') {
         const structs = [];

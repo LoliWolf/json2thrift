@@ -8,6 +8,7 @@ class Json2Thrift {
         const elements = {
             jsonInput: 'jsonInput',
             thriftOutput: 'thriftOutput',
+            clearBtn: 'clearBtn',
             formatBtn: 'formatBtn',
             generateBtn: 'generateBtn',
             copyBtn: 'copyBtn',
@@ -33,6 +34,7 @@ class Json2Thrift {
     }
 
     bindEvents() {
+        this.clearBtn.addEventListener('click', () => this.clearInput());
         this.formatBtn.addEventListener('click', () => this.formatJson());
         this.generateBtn.addEventListener('click', () => this.generateThrift());
         this.copyBtn.addEventListener('click', () => this.copyToClipboard());
@@ -57,6 +59,24 @@ class Json2Thrift {
         } catch (error) {
             this.showToast('JSON格式错误: ' + error.message, 'error');
         }
+    }
+
+    clearInput() {
+        // 清空JSON输入
+        this.jsonInput.value = '';
+        
+        // 清空Thrift输出
+        this.thriftOutput.value = '';
+        
+        // 清空树形编辑器
+        if (typeof window.treeEditorV2 !== 'undefined') {
+            window.treeEditorV2.clear();
+        }
+        
+        // 切换到文本预览模式
+        this.switchMode('text');
+        
+        this.showToast('已清空所有内容');
     }
 
     generateThrift() {
