@@ -31,9 +31,6 @@ class ThriftTreeEditorV2 {
         
         this.container.className = 'thrift-tree-container';
         this.container.innerHTML = `
-            <div class="tree-toolbar">
-                <button class="btn btn-sm" onclick="window.treeEditorV2 && window.treeEditorV2.resetChanges()" title="重置所有修改">重置</button>
-            </div>
             <div class="tree-content" id="treeContent"></div>
         `;
     }
@@ -43,6 +40,11 @@ class ThriftTreeEditorV2 {
         this.originalJson = jsonData;
         this.thriftText = this.jsonToThrift(jsonData);
         this.parsedData = this.parseThriftText(this.thriftText);
+        
+        // 保存初始状态，用于重置功能
+        this.initialParsedData = JSON.parse(JSON.stringify(this.parsedData));
+        this.initialThriftText = this.thriftText;
+        
         this.renderTree();
     }
 
@@ -341,11 +343,7 @@ class ThriftTreeEditorV2 {
         this.autoSave();
     }
 
-    resetChanges() {
-        this.modifications.clear();
-        this.renderTree();
-        this.autoSave();
-    }
+
 
     // 应用命名风格
     applyNamingStyle(name, style) {
@@ -567,10 +565,7 @@ class ThriftTreeEditorV2 {
         this.modifications.set(`${path}_modifier`, modifier);
     }
 
-    resetChanges() {
-        this.modifications.clear();
-        this.renderTree();
-    }
+
 
     updateNamingPreview(fieldPath, originalName, currentName) {
         const select = document.querySelector(`select[data-path="${fieldPath}"][data-type="naming"]`);

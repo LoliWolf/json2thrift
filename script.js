@@ -11,7 +11,6 @@ class Json2Thrift {
             formatBtn: 'formatBtn',
             generateBtn: 'generateBtn',
             copyBtn: 'copyBtn',
-            clearBtn: 'clearBtn',
             toast: 'toast',
             treeModeBtn: 'treeModeBtn',
             textModeBtn: 'textModeBtn',
@@ -37,7 +36,6 @@ class Json2Thrift {
         this.formatBtn.addEventListener('click', () => this.formatJson());
         this.generateBtn.addEventListener('click', () => this.generateThrift());
         this.copyBtn.addEventListener('click', () => this.copyToClipboard());
-        this.clearBtn.addEventListener('click', () => this.clearAll());
         
         // 模式切换事件
         this.treeModeBtn.addEventListener('click', () => this.switchMode('tree'));
@@ -460,16 +458,7 @@ class Json2Thrift {
         }
     }
 
-    // 覆盖clearAll方法以支持新的树形编辑器
-    clearAll() {
-        this.jsonInput.value = '';
-        this.thriftOutput.value = '';
-        if (typeof window.treeEditorV2 !== 'undefined') {
-            window.treeEditorV2.resetChanges();
-            document.getElementById('treeEditor').innerHTML = '';
-        }
-        this.showToast('已清空所有内容');
-    }
+
 
     // 覆盖copyToClipboard方法以支持新的树形编辑器
     async copyToClipboard() {
