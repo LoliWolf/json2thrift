@@ -309,7 +309,9 @@ class Json2Thrift {
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
-    new Json2Thrift();
+    const app = new Json2Thrift();
+    // 默认显示文本预览
+    app.switchMode('text');
 });
 
 // uTools API 集成

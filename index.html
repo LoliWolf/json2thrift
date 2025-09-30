@@ -28,15 +28,15 @@
             <div class="panel-header">
                 <h3>Thrift IDL树形编辑器</h3>
                 <div class="button-group">
-                    <button id="treeModeBtn" class="btn btn-primary active">树形编辑</button>
-                    <button id="textModeBtn" class="btn btn-secondary">文本预览</button>
+                    <button id="treeModeBtn" class="btn btn-secondary">树形编辑</button>
+                    <button id="textModeBtn" class="btn btn-primary active">文本预览</button>
                     <button id="copyBtn" class="btn btn-success">复制代码</button>
                 </div>
             </div>
             <div id="treeEditorContainer" class="tree-editor-container">
-                <div id="treeEditor" class="thrift-tree-container"></div>
+                <div id="treeEditor" class="thrift-tree-container" style="display: none;"></div>
                 <textarea id="thriftOutput" placeholder="生成的Thrift IDL将显示在这里..." 
-                          spellcheck="false" style="display: none;"></textarea>
+                          spellcheck="false" style="display: block;"></textarea>
             </div>
         </div>
     </div>

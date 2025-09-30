@@ -131,14 +131,14 @@ body {
 }
 
 .btn.active {
-    background: #3b82f6;
-    color: white;
-    border-color: #3b82f6;
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #9ca3af;
 }
 
 .btn.active:hover {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: #e5e7eb;
+    border-color: #9ca3af;
 }
 
 /* 树形编辑器容器样式 */
