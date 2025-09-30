@@ -93,10 +93,16 @@ class Json2Thrift {
             const baseThrift = this.convertToThrift(jsonObj);
             this.thriftOutput.value = baseThrift;
             
-            // 更新树形编辑器
+            // 重置并更新树形编辑器 - 基于生成的Thrift文本而不是JSON
             if (typeof window.treeEditorV2 !== 'undefined') {
-                window.treeEditorV2.loadFromJson(jsonObj);
+                // 清除所有修改状态
+                window.treeEditorV2.modifications.clear();
+                // 基于生成的Thrift文本加载，确保一致性
+                window.treeEditorV2.loadFromThrift(baseThrift);
             }
+            
+            // 切换到文本预览模式
+            this.switchMode('text');
             
             this.showToast('Thrift IDL生成成功');
         } catch (error) {
