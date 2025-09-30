@@ -12,6 +12,9 @@ class Json2Thrift {
         this.copyBtn = document.getElementById('copyBtn');
         this.clearBtn = document.getElementById('clearBtn');
         this.toast = document.getElementById('toast');
+        this.treeModeBtn = document.getElementById('treeModeBtn');
+        this.textModeBtn = document.getElementById('textModeBtn');
+        this.treeEditorContainer = document.getElementById('treeEditor');
     }
 
     bindEvents() {
@@ -19,6 +22,10 @@ class Json2Thrift {
         this.generateBtn.addEventListener('click', () => this.generateThrift());
         this.copyBtn.addEventListener('click', () => this.copyToClipboard());
         this.clearBtn.addEventListener('click', () => this.clearAll());
+        
+        // 模式切换事件
+        this.treeModeBtn.addEventListener('click', () => this.switchMode('tree'));
+        this.textModeBtn.addEventListener('click', () => this.switchMode('text'));
     }
 
     formatJson() {
@@ -47,8 +54,24 @@ class Json2Thrift {
             }
 
             const jsonObj = JSON.parse(jsonText);
-            const thriftIdl = this.convertToThrift(jsonObj);
-            this.thriftOutput.value = thriftIdl;
+            
+            // 检查当前模式
+            const treeMode = document.getElementById('treeModeBtn').classList.contains('active');
+            
+            if (treeMode && treeEditor) {
+                // 使用树形编辑器，保留之前的状态
+                if (treeEditor.needsReload(jsonObj)) {
+                    treeEditor.lastJsonStructure = JSON.stringify(jsonObj);
+                    treeEditor.loadFromJson(jsonObj);
+                }
+                const thriftIdl = treeEditor.generateThriftIDL();
+                this.thriftOutput.value = thriftIdl;
+            } else {
+                // 使用传统文本模式
+                const thriftIdl = this.convertToThrift(jsonObj);
+                this.thriftOutput.value = thriftIdl;
+            }
+            
             this.showToast('Thrift IDL生成成功');
         } catch (error) {
             this.showToast('生成失败: ' + error.message, 'error');
@@ -206,8 +229,67 @@ class Json2Thrift {
         }).join('');
     }
 
+    switchMode(mode) {
+        const treeEditorDiv = document.getElementById('treeEditor');
+        const textOutput = document.getElementById('thriftOutput');
+        
+        if (mode === 'tree') {
+            treeEditorDiv.style.display = 'block';
+            textOutput.style.display = 'none';
+            this.treeModeBtn.classList.add('active');
+            this.textModeBtn.classList.remove('active');
+            
+            // 初始化树形编辑器
+            if (typeof treeEditor === 'undefined') {
+                window.treeEditor = new ThriftTreeEditor('treeEditor');
+            }
+            
+            // 如果有JSON数据，加载到树形编辑器
+            try {
+                const jsonText = this.jsonInput.value.trim();
+                if (jsonText) {
+                    const jsonObj = JSON.parse(jsonText);
+                    window.treeEditor.loadFromJson(jsonObj);
+                }
+            } catch (error) {
+                console.log('等待有效JSON数据...');
+            }
+        } else {
+            treeEditorDiv.style.display = 'none';
+            textOutput.style.display = 'block';
+            this.treeModeBtn.classList.remove('active');
+            this.textModeBtn.classList.add('active');
+            
+            // 同步树形编辑器的更改到文本输出
+            if (typeof window.treeEditor !== 'undefined') {
+                const thriftIDL = window.treeEditor.generateThriftIDL();
+                this.thriftOutput.value = thriftIDL;
+            }
+        }
+    }
+
+    // 覆盖clearAll方法以支持树形编辑器
+    clearAll() {
+        this.jsonInput.value = '';
+        this.thriftOutput.value = '';
+        if (typeof window.treeEditor !== 'undefined') {
+            window.treeEditor.resetChanges();
+            document.getElementById('treeEditor').innerHTML = '';
+        }
+        this.showToast('已清空所有内容');
+    }
+
+    // 覆盖copyToClipboard方法以支持树形编辑器
     async copyToClipboard() {
-        const text = this.thriftOutput.value;
+        let text = '';
+        
+        const treeMode = this.treeModeBtn.classList.contains('active');
+        if (treeMode && typeof window.treeEditor !== 'undefined') {
+            text = window.treeEditor.generateThriftIDL();
+        } else {
+            text = this.thriftOutput.value;
+        }
+        
         if (!text.trim()) {
             this.showToast('没有可复制的内容', 'error');
             return;
@@ -223,17 +305,20 @@ class Json2Thrift {
                 this.showToast('已复制到剪贴板');
             } catch (error) {
                 // 最终降级方案
-                this.thriftOutput.select();
-                document.execCommand('copy');
+                if (treeMode) {
+                    const tempTextarea = document.createElement('textarea');
+                    tempTextarea.value = text;
+                    document.body.appendChild(tempTextarea);
+                    tempTextarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempTextarea);
+                } else {
+                    this.thriftOutput.select();
+                    document.execCommand('copy');
+                }
                 this.showToast('已复制到剪贴板 (备用模式)');
             }
         }
-    }
-
-    clearAll() {
-        this.jsonInput.value = '';
-        this.thriftOutput.value = '';
-        this.showToast('已清空所有内容');
     }
 
     showToast(message, type = 'success') {

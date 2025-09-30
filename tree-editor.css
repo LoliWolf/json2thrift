@@ -1,0 +1,360 @@
+/* 树形编辑器样式 */
+.thrift-tree-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 12px; /* 减小字体 */
+    background: #f8fafc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* uTools尺寸优化 */
+@media (max-width: 800px) {
+    .thrift-tree-container {
+        font-size: 11px;
+    }
+    
+    .field-row {
+        padding: 6px 8px;
+        gap: 6px;
+    }
+    
+    .modifier-select, .naming-select {
+        min-width: 70px;
+        padding: 3px 6px;
+        font-size: 11px;
+    }
+    
+    .field-name-input {
+        min-width: 100px;
+        padding: 3px 6px;
+        font-size: 11px;
+    }
+    
+    .tree-toolbar .btn {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 600px) {
+    .thrift-tree-container {
+        font-size: 10px;
+    }
+    
+    .field-row {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .field-index {
+        width: 16px;
+        font-size: 9px;
+    }
+    
+    .modifier-select, .naming-select {
+        min-width: 60px;
+        font-size: 10px;
+    }
+}
+
+.tree-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.tree-toolbar .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tree-toolbar .btn:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.tree-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.tree-node {
+    margin-bottom: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: white;
+    transition: all 0.2s;
+}
+
+.tree-node:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tree-node-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f1f5f9;
+    border-radius: 6px 6px 0 0;
+    font-weight: 600;
+}
+
+.struct-name {
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.struct-type {
+    color: #64748b;
+    font-size: 12px;
+    background: #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.fields-container {
+    padding: 0;
+}
+
+.field-node {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.field-node:last-child {
+    border-bottom: none;
+}
+
+.field-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: white;
+    transition: background 0.2s;
+}
+
+.field-row:hover {
+    background: #f8fafc;
+}
+
+.field-index {
+    color: #64748b;
+    font-size: 11px;
+    width: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.modifier-select, .naming-select {
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 80px;
+}
+
+.modifier-select:hover, .naming-select:hover {
+    border-color: #9ca3af;
+}
+
+.modifier-select:focus, .naming-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.field-name-input {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+    background: white;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.field-name-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.field-type {
+    color: #059669;
+    font-size: 12px;
+    background: #d1fae5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: #64748b;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.field-children {
+    margin-left: 20px;
+    border-left: 2px solid #e5e7eb;
+}
+
+.field-children .field-row {
+    margin-left: 20px;
+}
+
+/* 滚动条样式 */
+.tree-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tree-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.tree-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.tree-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .field-row {
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 6px 8px;
+    }
+    
+    .field-name-input {
+        min-width: 100px;
+        order: 1;
+        flex: 1 1 100%;
+    }
+    
+    .modifier-select, .naming-select {
+        min-width: 70px;
+    }
+    
+    .field-type {
+        font-size: 11px;
+    }
+}
+
+/* 动画效果 */
+.field-node {
+    transition: all 0.2s ease;
+}
+
+.field-node:hover {
+    transform: translateX(2px);
+}
+
+.tree-node {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 高亮效果 */
+.field-row.editing {
+    background: #fef3c7;
+    border-left: 3px solid #f59e0b;
+}
+
+.field-name-input.editing {
+    background: #fef3c7;
+    border-color: #f59e0b;
+}
+
+/* 工具提示 */
+.tree-tooltip {
+    position: absolute;
+    background: #1f2937;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.tree-tooltip.show {
+    opacity: 1;
+}
+
+/* 空状态 */
+.tree-empty {
+    text-align: center;
+    color: #64748b;
+    padding: 40px;
+    font-style: italic;
+}
+
+/* 加载状态 */
+.tree-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #64748b;
+}
+
+.tree-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e5e7eb;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -130,6 +130,84 @@ body {
     transform: translateY(0);
 }
 
+.btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.btn.active:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+/* 树形编辑器容器样式 */
+.tree-editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.thrift-tree-container {
+    flex: 1;
+    overflow: hidden;
+}
+
+/* uTools窗口尺寸适配 */
+@media (max-height: 600px) {
+    .container {
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .left-panel, .right-panel {
+        border-radius: 8px;
+    }
+    
+    .panel-header {
+        padding: 12px;
+        min-height: 40px;
+        gap: 6px;
+    }
+    
+    .panel-header h3 {
+        font-size: 14px;
+    }
+    
+    textarea {
+        padding: 12px;
+        font-size: 12px;
+    }
+}
+
+@media (max-height: 400px) {
+    .container {
+        padding: 8px;
+        gap: 8px;
+    }
+    
+    .panel-header {
+        padding: 8px;
+        min-height: 36px;
+        gap: 4px;
+    }
+    
+    .panel-header h3 {
+        font-size: 12px;
+    }
+    
+    .btn {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+    
+    textarea {
+        padding: 8px;
+        font-size: 11px;
+    }
+}
+
 textarea {
     flex: 1;
     border: none;

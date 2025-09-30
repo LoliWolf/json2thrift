@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON转Thrift IDL</title>
+    <title>JSON转Thrift IDL - 树形编辑器</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="tree-editor.css">
 </head>
 <body>
     <div class="container">
@@ -24,15 +25,32 @@
         
         <div class="right-panel">
             <div class="panel-header">
-                <h3>Thrift IDL预览</h3>
-                <button id="copyBtn" class="btn btn-success">复制代码</button>
+                <h3>Thrift IDL树形编辑器</h3>
+                <div class="button-group">
+                    <button id="treeModeBtn" class="btn btn-primary active">树形编辑</button>
+                    <button id="textModeBtn" class="btn btn-secondary">文本预览</button>
+                    <button id="copyBtn" class="btn btn-success">复制代码</button>
+                </div>
             </div>
-            <textarea id="thriftOutput" placeholder="生成的Thrift IDL将显示在这里..." spellcheck="false"></textarea>
+            <div id="treeEditorContainer" class="tree-editor-container">
+                <div id="treeEditor" class="thrift-tree-container"></div>
+                <textarea id="thriftOutput" placeholder="生成的Thrift IDL将显示在这里..." 
+                          spellcheck="false" style="display: none;"></textarea>
+            </div>
         </div>
     </div>
     
     <div id="toast" class="toast"></div>
     
     <script src="script.js"></script>
+    <script src="tree-editor.js"></script>
+    <script>
+        // 初始化树形编辑器
+        window.parentApp = {
+            updateThriftOutput: function(thriftIDL) {
+                document.getElementById('thriftOutput').value = thriftIDL;
+            }
+        };
+    </script>
 </body>
 </html>
