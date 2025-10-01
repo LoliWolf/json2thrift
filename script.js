@@ -93,12 +93,16 @@ class Json2Thrift {
             const baseThrift = this.convertToThrift(jsonObj);
             this.thriftOutput.value = baseThrift;
             
+            // 获取拓扑排序的结构体顺序并保存（无论 treeEditorV2 是否存在）
+            const topologicalOrder = this.topologicalSort();
+            this.lastTopologicalOrder = topologicalOrder;
+            
             // 重置并更新树形编辑器 - 基于生成的Thrift文本而不是JSON
             if (typeof window.treeEditorV2 !== 'undefined') {
                 // 清除所有修改状态
                 window.treeEditorV2.modifications.clear();
-                // 基于生成的Thrift文本加载，确保一致性
-                window.treeEditorV2.loadFromThrift(baseThrift);
+                // 基于生成的Thrift文本加载，并传递拓扑排序顺序
+                window.treeEditorV2.loadFromThrift(baseThrift, topologicalOrder);
             }
             
             // 切换到文本预览模式
@@ -463,12 +467,13 @@ class Json2Thrift {
             
             // 从当前文本加载到树形编辑器
             try {
-                const jsonText = this.jsonInput.value.trim();
-                if (jsonText) {
-                    const jsonObj = JSON.parse(jsonText);
+                // 优先使用 Thrift 输出（包含拓扑排序信息），其次使用 JSON 输入
+                if (this.thriftOutput.value.trim() && this.lastTopologicalOrder) {
+                    // 使用保存的拓扑排序信息
+                    window.treeEditorV2.loadFromThrift(this.thriftOutput.value, this.lastTopologicalOrder);
+                } else if (this.jsonInput.value.trim()) {
+                    const jsonObj = JSON.parse(this.jsonInput.value);
                     window.treeEditorV2.loadFromJson(jsonObj);
-                } else if (this.thriftOutput.value.trim()) {
-                    window.treeEditorV2.loadFromThrift(this.thriftOutput.value);
                 }
             } catch (error) {
                 console.log('等待有效数据...');
@@ -531,11 +536,27 @@ class Json2Thrift {
 }
 
 // 初始化应用
-document.addEventListener('DOMContentLoaded', () => {
-    const app = new Json2Thrift();
-    // 默认显示文本预览
-    app.switchMode('text');
-});
+function initializeApp() {
+    if (!window.app) {
+        const app = new Json2Thrift();
+        // 将 app 实例赋值给 window.app，以便在树形编辑器中访问
+        window.app = app;
+        // 默认显示文本预览
+        app.switchMode('text');
+    }
+    return window.app;
+}
+
+// 确保在 DOM 加载完成后初始化
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+// 如果 DOM 已经加载完成，立即初始化
+if (document.readyState === 'loading') {
+    // DOM 还在加载中，等待 DOMContentLoaded 事件
+} else {
+    // DOM 已经加载完成，立即初始化
+    initializeApp();
+}
 
 // uTools API 集成
 if (typeof window.utools !== 'undefined') {

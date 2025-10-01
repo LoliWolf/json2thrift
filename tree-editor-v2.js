@@ -6,6 +6,7 @@ class ThriftTreeEditorV2 {
         this.parsedData = null;
         this.originalJson = null;
         this.modifications = new Map();
+        this.originalStructOrder = []; // 保存原始结构顺序
         this.namingStyles = {
         'camelCase': 'camelCase',
         'snake_case': 'snake_case',
@@ -49,9 +50,20 @@ class ThriftTreeEditorV2 {
     }
 
     // 从文本加载Thrift
-    loadFromThrift(thriftText) {
+    loadFromThrift(thriftText, topologicalOrder = null) {
         this.thriftText = thriftText;
         this.parsedData = this.parseThriftText(thriftText);
+        // 如果提供了拓扑排序顺序，使用它覆盖解析时的顺序
+        // 必须在 parseThriftText 之后设置，因为 parseThriftText 会覆盖 originalStructOrder
+        if (topologicalOrder && topologicalOrder.length > 0) {
+            // 确保拓扑排序是数组格式
+            if (Array.isArray(topologicalOrder)) {
+                this.originalStructOrder = topologicalOrder;
+            } else if (typeof topologicalOrder === 'string') {
+                // 如果是字符串，按逗号分割
+                this.originalStructOrder = topologicalOrder.split(',').map(s => s.trim());
+            }
+        }
         this.renderTree();
     }
 
@@ -61,6 +73,7 @@ class ThriftTreeEditorV2 {
         this.parsedData = null;
         this.originalJson = null;
         this.modifications.clear();
+        this.originalStructOrder = []; // 清空原始结构顺序
         this.initialParsedData = null;
         this.initialThriftText = '';
         this.renderTree();
@@ -148,6 +161,7 @@ class ThriftTreeEditorV2 {
     // 解析Thrift文本为结构化数据
     parseThriftText(thriftText) {
         const structs = [];
+        const structOrder = []; // 记录结构出现的顺序
         const lines = thriftText.split('\n');
         let currentStruct = null;
         let inStruct = false;
@@ -162,6 +176,7 @@ class ThriftTreeEditorV2 {
                         fields: []
                     };
                     structs.push(currentStruct);
+                    structOrder.push(match[1]); // 记录结构名称的顺序
                     inStruct = true;
                 }
             } else if (trimmed === '}' && inStruct) {
@@ -191,6 +206,8 @@ class ThriftTreeEditorV2 {
             }
         }
 
+        // 保存原始结构顺序
+        this.originalStructOrder = structOrder;
         return structs;
     }
 
@@ -210,10 +227,22 @@ class ThriftTreeEditorV2 {
         content.innerHTML = '';
         
         if (this.parsedData && this.parsedData.length > 0) {
-            this.parsedData.forEach(struct => {
-                const structElement = this.createStructElement(struct);
-                content.appendChild(structElement);
-            });
+            // 如果有原始顺序信息，按照原始顺序渲染
+            if (this.originalStructOrder && this.originalStructOrder.length > 0) {
+                this.originalStructOrder.forEach(structName => {
+                    const struct = this.parsedData.find(s => s.name === structName);
+                    if (struct) {
+                        const structElement = this.createStructElement(struct);
+                        content.appendChild(structElement);
+                    }
+                });
+            } else {
+                // 如果没有原始顺序信息，按照当前顺序渲染
+                this.parsedData.forEach(struct => {
+                    const structElement = this.createStructElement(struct);
+                    content.appendChild(structElement);
+                });
+            }
         }
     }
 
@@ -346,12 +375,10 @@ class ThriftTreeEditorV2 {
     // 简化状态管理方法
     setModifiedName(path, name) {
         this.modifications.set(`${path}_name`, name);
-        this.autoSave();
     }
 
     setModifiedModifier(path, modifier) {
         this.modifications.set(`${path}_modifier`, modifier);
-        this.autoSave();
     }
 
 
@@ -408,7 +435,16 @@ class ThriftTreeEditorV2 {
     generateUpdatedThrift() {
         let result = '';
         
-        if (this.parsedData) {
+        if (this.parsedData && this.originalStructOrder.length > 0) {
+            // 按照原始顺序输出结构
+            this.originalStructOrder.forEach(structName => {
+                const struct = this.parsedData.find(s => s.name === structName);
+                if (struct) {
+                    result += this.formatStructDefinition(struct) + '\n\n';
+                }
+            });
+        } else if (this.parsedData) {
+            // 如果没有原始顺序信息，则按照当前顺序输出
             this.parsedData.forEach(struct => {
                 result += this.formatStructDefinition(struct) + '\n\n';
             });
