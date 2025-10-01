@@ -1,6 +1,6 @@
 {
   "name": "json2thrift",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "将JSON数据转换为Thrift IDL结构体定义",
   "main": "index.html",
   "scripts": {
