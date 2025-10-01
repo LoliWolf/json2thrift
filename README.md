@@ -196,7 +196,7 @@ struct GeneratedStruct {
 
 ## 📝 开发信息
 
-- **版本**：1.0.0
+- **版本**：1.1.0
 - **作者**：Loli_Wolf
 - **许可证**：MIT License
 - **仓库**：https://github.com/LoliWolf/json2thrift.git
