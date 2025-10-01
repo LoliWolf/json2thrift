@@ -130,6 +130,131 @@ body {
     transform: translateY(0);
 }
 
+.btn.active {
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #9ca3af;
+}
+
+.btn.active:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* 树形编辑器容器样式 */
+.tree-editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.thrift-tree-container {
+    flex: 1;
+    overflow: hidden;
+}
+
+/* uTools窗口尺寸适配 */
+@media (max-height: 600px) {
+    .container {
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .left-panel, .right-panel {
+        border-radius: 8px;
+    }
+    
+    .panel-header {
+        padding: 12px;
+        min-height: 40px;
+        gap: 6px;
+    }
+    
+    .panel-header h3 {
+        font-size: 14px;
+    }
+    
+    textarea {
+        padding: 12px;
+        font-size: 12px;
+    }
+}
+
+@media (max-height: 400px) {
+    .container {
+        padding: 8px;
+        gap: 8px;
+    }
+    
+    .panel-header {
+        padding: 8px;
+        min-height: 36px;
+        gap: 4px;
+    }
+    
+    .panel-header h3 {
+        font-size: 12px;
+    }
+    
+    .btn {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+    
+    textarea {
+        padding: 8px;
+        font-size: 11px;
+    }
+}
+
+/* uTools极简模式 */
+.utools-minimal .container {
+    padding: 4px;
+    gap: 4px;
+}
+
+.utools-minimal .panel-header {
+    padding: 6px;
+    min-height: 32px;
+    gap: 3px;
+}
+
+.utools-minimal .panel-header h3 {
+    font-size: 11px;
+}
+
+.utools-minimal .btn {
+    padding: 3px 6px;
+    font-size: 9px;
+}
+
+.utools-minimal textarea {
+    padding: 6px;
+    font-size: 10px;
+}
+
+/* 强制不溢出 */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+.container {
+    box-sizing: border-box;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.left-panel, .right-panel {
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
 textarea {
     flex: 1;
     border: none;
